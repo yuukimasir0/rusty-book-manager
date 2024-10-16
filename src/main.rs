@@ -1,19 +1,17 @@
-use std::net::{Ipv4Addr, SocketAddr};
-
+use anyhow::Result;
 use axum::{extract::State, http::StatusCode, routing::get, Router};
 use sqlx::{postgres::PgConnectOptions, PgPool};
+use std::net::{Ipv4Addr, SocketAddr};
 use tokio::net::TcpListener;
-use anyhow::Result;
-
 
 #[tokio::main]
-async fn main() -> Result<()>{
-    let database_cfg = DatabaseConfig { 
-        host: "localhost".into(), 
-        port: 5432, 
-        username: "app".into(), 
-        password: "passwd".into(), 
-        database: "app".into() 
+async fn main() -> Result<()> {
+    let database_cfg = DatabaseConfig {
+        host: "localhost".into(),
+        port: 5432,
+        username: "app".into(),
+        password: "passwd".into(),
+        database: "app".into(),
     };
     let conn_pool = connect_database_with(database_cfg);
     let app = Router::new()
@@ -54,7 +52,6 @@ async fn health_check_db_works(pool: sqlx::PgPool) {
     let status_code = health_check_db(State(pool)).await;
     assert_eq!(status_code, StatusCode::OK);
 }
-
 
 struct DatabaseConfig {
     pub host: String,
