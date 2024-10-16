@@ -3,7 +3,7 @@ default_to_workspace = false
 
 [env]
 HOST = "0.0.0.0"
-PORT = 18080
+PORT = 8080
 DATABASE_USERNAME = "app"
 DATABASE_PASSWORD = "passwd"
 DATABASE_NAME = "app"
@@ -16,7 +16,7 @@ AUTH_TOKEN_TTL = 86400
 [tasks.set-env-docker.env]
 DATABASE_HOST = "postgres"
 DATABASE_PORT = "${DATABASE_PORT_INNER}"
-DATABASE_URL = "postgres://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}$password=${DATABASE_PASSWORD}"
+DATABASE_URL = "postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
 REDIS_HOST = "redis"
 REDIS_PORT = "${REDIS_PORT_INNER}"
 JAEGER_HOST = "jaeger"
@@ -25,15 +25,16 @@ JAEGER_PORT = 6831
 [tasks.set-env-local.env]
 DATABASE_HOST = "localhost"
 DATABASE_PORT = "${DATABASE_PORT_OUTER}"
-DATABASE_URL = "postgres://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}$password=${DATABASE_PASSWORD}"
+DATABASE_URL = "postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
 REDIS_HOST = "localhost"
-REDIS_PORT = "${REDIS_PORT_INNER}"
+REDIS_PORT = "${REDIS_PORT_OUTER}"
 JAEGER_HOST = "localhost"
 JAEGER_PORT = 6831
 
-[tasks.before_build]
+
+[tasks.before-build]
 run_task = [
-    {name = [
+    { name = [
         "compose-up-db",
         "compose-up-redis",
     ] },
@@ -43,8 +44,8 @@ run_task = [
 extend = "set-env-local"
 command = "docker"
 args = [
-    "compose", "build", "app",
-    "--build-arg", "BUILDKIT_INLINE_CACHE=1", "${@}"
+  "compose", "build", "app",
+  "--build-arg", "BUILDKIT_INLINE_CACHE=1", "${@}"
 ]
 
 [tasks.run]
@@ -86,7 +87,7 @@ watch = true
 [tasks.fmt]
 extend = "set-env-local"
 command = "cargo"
-args = ["fmt", "--all", "--all-targets", "${@}"]
+args = ["fmt", "--all", "${@}"]
 
 [tasks.clippy]
 extend = "set-env-local"
@@ -94,32 +95,39 @@ command = "cargo"
 args = ["clippy", "--all", "--all-targets", "${@}"]
 
 [tasks.test]
-extend = "std-env-local"
-install_crate = { crate_name = "cargo-nextest", binary = "cargo", test_arg = ["nextest","--help"] }
+extend = "set-env-local"
+install_crate = { crate_name = "cargo-nextest", binary = "cargo", test_arg = [
+  "nextest", "--help",
+] }
 command = "cargo"
-args = ["nextest", "run", "--workspace", "--status-level", "all", "--test-threads=1"]
+args = [
+  "nextest", "run", "--workspace",
+  "--status-level", "all", "--test-threads=1",
+]
 
 [tasks.clippy-ci]
+extend = "set-env-local"
 dependencies = ["before-build"]
-run_task = "clippy"
+command = "cargo"
+args = ["clippy", "--", "--no-deps", "-Dwarnings"]
 
 [tasks.test-ci]
 dependencies = ["before-build"]
 run_task = "test"
 
 [tasks.migrate]
-extend = "std-env-local"
-install_crate = { crate_name = "sqlx_cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
+extend = "set-env-local"
+install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 script = '''
 #!/bin/bash
-until sqlx migraet run --source adapter/migrations; do
+until sqlx migrate run --source adapter/migrations; do
     sleep 1
 done
 '''
 
 [tasks.sqlx]
 extend = "set-env-local"
-install_crate = { crate_name = "sqlx_cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
+install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 command = "sqlx"
 args = ["${@}", "--source", "adapter/migrations"]
 
@@ -127,21 +135,21 @@ args = ["${@}", "--source", "adapter/migrations"]
 extend = "set-env-local"
 command = "docker"
 args = [
-    "run", "-it", "--rm",
-    "--network", "host",
-    "-v", "${PWD}:/work", 
-    "postgres:15", "psql", "${DATABASE_URL}", "${@}"
+  "run", "-it", "--rm",
+  "--network", "host",
+  "-v", "${PWD}:/work",
+  "postgres:15", "psql", "${DATABASE_URL}", "${@}"
 ]
 
 [tasks.initial-setup]
 extend = "set-env-local"
 command = "docker"
 args = [
-    "run", "-it", "--rm",
-    "--network", "host",
-    "-v", "${PWD}:/work", 
-    "postgres:15", "psql", "${DATABASE_URL}",
-    "-f", "/work/data/initial_setup.sql"
+  "run", "-it", "--rm",
+  "--network", "host",
+  "-v", "${PWD}:/work",
+  "postgres:15", "psql", "${DATABASE_URL}",
+  "-f", "/work/data/initial_setup.sql"
 ]
 
 [tasks.compose]
