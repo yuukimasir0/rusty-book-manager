@@ -27,8 +27,8 @@ async fn main() -> Result<()> {
 async fn bootstrap() -> Result<()> {
     let app_config = AppConfig::new()?;
     let pool = connect_database_with(&app_config.database);
-
-    let registry = AppRegistry::new(pool);
+    let redis_client = todo!();
+    let registry = AppRegistry::new(pool, redis_client, app_config);
 
     let app = Router::new()
         .merge(build_health_check_routers())

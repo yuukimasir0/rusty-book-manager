@@ -9,8 +9,8 @@ pub struct CreateToken {
 impl CreateToken {
     pub fn new(user_id: UserId) -> Self {
         let access_token = Uuid::new_v4().simple().to_string();
-        Self { 
-            user_id, 
+        Self {
+            user_id,
             access_token,
         }
     }
