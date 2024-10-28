@@ -43,7 +43,8 @@ impl AuthRepository for AuthRepositoryImpl {
         let user_item = sqlx::query_as!(
             UserItem,
             r#"
-                SELECT user_id, password_hash FROM users WHERE email = $1;
+                SELECT user_id, password_hash FROM users 
+                WHERE email = $1;
             "#,
             email
         )

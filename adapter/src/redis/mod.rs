@@ -11,7 +11,7 @@ pub struct RedisClient {
 
 impl RedisClient {
     pub fn new(config: &RedisConfig) -> AppResult<Self> {
-        let client = Client::open(format!("resid://{}:{}", config.host, config.port))?;
+        let client = Client::open(format!("redis://{}:{}", config.host, config.port))?;
         Ok(Self { client })
     }
 

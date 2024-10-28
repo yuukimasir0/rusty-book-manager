@@ -1,9 +1,12 @@
 use std::net::{Ipv4Addr, SocketAddr};
+use std::sync::Arc;
 
-use adapter::database::connect_database_with;
+use adapter::{database::connect_database_with, redis::RedisClient};
 use anyhow::Context;
 use anyhow::Result;
-use api::route::{book::build_book_routers, health::build_health_check_routers};
+use api::route::{
+    auth::build_auth_routers, book::build_book_routers, health::build_health_check_routers,
+};
 use axum::Router;
 use registry::AppRegistry;
 use shared::{
@@ -27,12 +30,13 @@ async fn main() -> Result<()> {
 async fn bootstrap() -> Result<()> {
     let app_config = AppConfig::new()?;
     let pool = connect_database_with(&app_config.database);
-    let redis_client = todo!();
-    let registry = AppRegistry::new(pool, redis_client, app_config);
+    let kv = Arc::new(RedisClient::new(&app_config.redis)?);
+    let registry = AppRegistry::new(pool, kv, app_config);
 
     let app = Router::new()
         .merge(build_health_check_routers())
         .merge(build_book_routers())
+        .merge(build_auth_routers())
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
