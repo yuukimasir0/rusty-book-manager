@@ -4,9 +4,7 @@ use std::sync::Arc;
 use adapter::{database::connect_database_with, redis::RedisClient};
 use anyhow::Context;
 use anyhow::Result;
-use api::route::{
-    auth::build_auth_routers, book::build_book_routers, health::build_health_check_routers,
-};
+use api::route::{auth, v1};
 use axum::Router;
 use registry::AppRegistry;
 use shared::{
@@ -34,9 +32,8 @@ async fn bootstrap() -> Result<()> {
     let registry = AppRegistry::new(pool, kv, app_config);
 
     let app = Router::new()
-        .merge(build_health_check_routers())
-        .merge(build_book_routers())
-        .merge(build_auth_routers())
+        .merge(v1::routes())
+        .merge(auth::routes())
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().level(Level::INFO))

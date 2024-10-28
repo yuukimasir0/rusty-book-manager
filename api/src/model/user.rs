@@ -1,4 +1,13 @@
-use kernel::model::{id::UserId, role::Role, user::User};
+use derive_new::new;
+use garde::Validate;
+use kernel::model::{
+    id::UserId,
+    role::Role,
+    user::{
+        event::{CreateUser, UpdatePassword, UpdateUserRole},
+        User,
+    },
+};
 use serde::{Deserialize, Serialize};
 use strum::VariantNames;
 
@@ -61,9 +70,73 @@ impl From<User> for UserResponse {
 
 #[derive(Deserialize, Validate)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateUserPasswordrequest {
+pub struct UpdateUserPasswordRequest {
     #[garde(length(min = 1))]
     current_password: String,
     #[garde(length(min = 1))]
     new_password: String,
+}
+
+#[derive(new)]
+pub struct UpdateUserPasswordRequestWithUserId(UserId, UpdateUserPasswordRequest);
+
+impl From<UpdateUserPasswordRequestWithUserId> for UpdatePassword {
+    fn from(value: UpdateUserPasswordRequestWithUserId) -> Self {
+        let UpdateUserPasswordRequestWithUserId(
+            user_id,
+            UpdateUserPasswordRequest {
+                current_password,
+                new_password,
+            },
+        ) = value;
+        Self {
+            user_id,
+            current_password,
+            new_password,
+        }
+    }
+}
+
+#[derive(Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateUserRequest {
+    #[garde(length(min = 1))]
+    name: String,
+    #[garde(email)]
+    email: String,
+    #[garde(length(min = 1))]
+    password: String,
+}
+
+impl From<CreateUserRequest> for CreateUser {
+    fn from(value: CreateUserRequest) -> Self {
+        let CreateUserRequest {
+            name,
+            email,
+            password,
+        } = value;
+        Self {
+            name,
+            email,
+            password,
+        }
+    }
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateUserRoleRequest {
+    role: RoleName,
+}
+
+#[derive(new)]
+pub struct UpdateUserRoleRequestWithUserId(UserId, UpdateUserRoleRequest);
+
+impl From<UpdateUserRoleRequestWithUserId> for UpdateUserRole {
+    fn from(value: UpdateUserRoleRequestWithUserId) -> Self {
+        let UpdateUserRoleRequestWithUserId(user_id, UpdateUserRoleRequest { role }) = value;
+        Self {
+            user_id,
+            role: Role::from(role),
+        }
+    }
 }
