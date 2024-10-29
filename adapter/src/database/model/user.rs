@@ -27,7 +27,7 @@ impl TryFrom<UserRow> for User {
             id: user_id,
             name,
             email,
-            role: Role::from_str(&role_name.as_str())
+            role: Role::from_str(role_name.as_str())
                 .map_err(|e| AppError::ConversionEntityError(e.to_string()))?,
         })
     }
