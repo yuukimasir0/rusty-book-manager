@@ -10,7 +10,7 @@ fn make_pg_connect_options(cfg: &DatabaseConfig) -> PgConnectOptions {
     PgConnectOptions::new()
         .host(&cfg.host)
         .port(cfg.port)
-        .username(&cfg.usename)
+        .username(&cfg.username)
         .password(&cfg.password)
         .database(&cfg.database)
 }

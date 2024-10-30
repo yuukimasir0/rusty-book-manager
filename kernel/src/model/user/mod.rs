@@ -16,7 +16,7 @@ pub struct BookOwner {
 }
 
 #[derive(Debug)]
-pub struct CheckOutUser {
+pub struct CheckoutUser {
     pub id: UserId,
     pub name: String,
 }

@@ -1,17 +1,13 @@
 use crate::database::{model::user::UserRow, ConnectionPool};
 use async_trait::async_trait;
 use derive_new::new;
-use kernel::{
-    model::{
-        id::UserId,
-        role::Role,
-        user::{
-            event::{CreateUser, DeleteUser, UpdatePassword, UpdateUserRole},
-            User,
-        },
-    },
-    repository::user::UserRepository,
+use kernel::model::id::UserId;
+use kernel::model::role::Role;
+use kernel::model::user::{
+    event::{CreateUser, DeleteUser, UpdateUserPassword, UpdateUserRole},
+    User,
 };
+use kernel::repository::user::UserRepository;
 use shared::error::{AppError, AppResult};
 
 #[derive(new)]
@@ -66,7 +62,7 @@ impl UserRepository for UserRepositoryImpl {
         let res = sqlx::query!(
             r#"
                 INSERT INTO users(user_id,name,email,password_hash,role_id)
-                SELECT $1,$2,$3,$4, role_id FROM roles WHERE name = $5
+                SELECT $1, $2, $3, $4, role_id FROM roles WHERE name = $5
             "#,
             user_id as _,
             event.name,
@@ -79,7 +75,7 @@ impl UserRepository for UserRepositoryImpl {
         .map_err(AppError::SpecificOperationError)?;
 
         if res.rows_affected() < 1 {
-            return Err(AppError::NoRowAffectedError(
+            return Err(AppError::NoRowsAffectedError(
                 "No user has been created".into(),
             ));
         }
@@ -91,7 +87,7 @@ impl UserRepository for UserRepositoryImpl {
             role,
         })
     }
-    async fn update_password(&self, event: UpdatePassword) -> AppResult<()> {
+    async fn update_password(&self, event: UpdateUserPassword) -> AppResult<()> {
         let mut tx = self.db.begin().await?;
 
         let original_password_hash = sqlx::query!(

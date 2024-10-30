@@ -11,10 +11,11 @@ impl AppConfig {
         let database = DatabaseConfig {
             host: std::env::var("DATABASE_HOST")?,
             port: std::env::var("DATABASE_PORT")?.parse()?,
-            usename: std::env::var("DATABASE_USERNAME")?,
+            username: std::env::var("DATABASE_USERNAME")?,
             password: std::env::var("DATABASE_PASSWORD")?,
             database: std::env::var("DATABASE_NAME")?,
         };
+
         let redis = RedisConfig {
             host: std::env::var("REDIS_HOST")?,
             port: std::env::var("REDIS_PORT")?.parse::<u16>()?,
@@ -33,7 +34,7 @@ impl AppConfig {
 pub struct DatabaseConfig {
     pub host: String,
     pub port: u16,
-    pub usename: String,
+    pub username: String,
     pub password: String,
     pub database: String,
 }

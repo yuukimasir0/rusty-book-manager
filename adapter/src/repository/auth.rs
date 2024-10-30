@@ -1,5 +1,10 @@
-use std::sync::Arc;
-
+use crate::{
+    database::{
+        model::auth::{from, AuthorizationKey, AuthorizedUserId, UserItem},
+        ConnectionPool,
+    },
+    redis::RedisClient,
+};
 use async_trait::async_trait;
 use derive_new::new;
 use kernel::{
@@ -10,14 +15,7 @@ use kernel::{
     repository::auth::AuthRepository,
 };
 use shared::error::{AppError, AppResult};
-
-use crate::{
-    database::{
-        model::auth::{from, AuthorizationKey, AuthorizedUserId, UserItem},
-        ConnectionPool,
-    },
-    redis::RedisClient,
-};
+use std::sync::Arc;
 
 #[derive(new)]
 pub struct AuthRepositoryImpl {
@@ -66,7 +64,7 @@ impl AuthRepository for AuthRepositoryImpl {
         Ok(key.into())
     }
 
-    async fn delete_token(&self, access_token: &AccessToken) -> AppResult<()> {
+    async fn delete_token(&self, access_token: AccessToken) -> AppResult<()> {
         let key: AuthorizationKey = access_token.into();
         self.kv.delete(&key).await
     }

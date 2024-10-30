@@ -14,5 +14,5 @@ pub trait AuthRepository: Send + Sync {
     ) -> AppResult<Option<UserId>>;
     async fn verify_user(&self, email: &str, password: &str) -> AppResult<UserId>;
     async fn create_token(&self, event: CreateToken) -> AppResult<AccessToken>;
-    async fn delete_token(&self, access_token: &AccessToken) -> AppResult<()>;
+    async fn delete_token(&self, access_token: AccessToken) -> AppResult<()>;
 }

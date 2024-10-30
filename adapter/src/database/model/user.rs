@@ -1,6 +1,6 @@
-use chrono::{DateTime, Utc};
 use kernel::model::{id::UserId, role::Role, user::User};
 use shared::error::AppError;
+use sqlx::types::chrono::{DateTime, Utc};
 use std::str::FromStr;
 
 pub struct UserRow {

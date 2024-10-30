@@ -4,17 +4,17 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum AppError {
     #[error("{0}")]
-    UnprocessableEntry(String),
+    UnprocessableEntity(String),
     #[error("{0}")]
     EntityNotFound(String),
     #[error("{0}")]
     ValidationError(#[from] garde::Report),
     #[error("トランザクションを実行できませんでした。")]
     TransactionError(#[source] sqlx::Error),
-    #[error("{0}")]
+    #[error("データベース処理実行中にエラーが発生しました。")]
     SpecificOperationError(#[source] sqlx::Error),
-    #[error("{0}")]
-    NoRowAffectedError(String),
+    #[error("No rows affected: {0}")]
+    NoRowsAffectedError(String),
     #[error("{0}")]
     KeyValueStoreError(#[from] redis::RedisError),
     #[error("{0}")]
@@ -23,7 +23,7 @@ pub enum AppError {
     ConvertToUuidError(#[from] uuid::Error),
     #[error("ログインに失敗しました")]
     UnauthenticatedError,
-    #[error("認可情報が間違っています")]
+    #[error("認可情報が誤っています")]
     UnauthorizedError,
     #[error("許可されていない操作です")]
     ForbiddenOperation,
@@ -34,17 +34,16 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
         let status_code = match self {
-            AppError::UnprocessableEntry(_) => StatusCode::UNPROCESSABLE_ENTITY,
+            AppError::UnprocessableEntity(_) => StatusCode::UNPROCESSABLE_ENTITY,
             AppError::EntityNotFound(_) => StatusCode::NOT_FOUND,
             AppError::ValidationError(_) | AppError::ConvertToUuidError(_) => {
                 StatusCode::BAD_REQUEST
             }
             AppError::UnauthenticatedError | AppError::ForbiddenOperation => StatusCode::FORBIDDEN,
             AppError::UnauthorizedError => StatusCode::UNAUTHORIZED,
-
             e @ (AppError::TransactionError(_)
             | AppError::SpecificOperationError(_)
-            | AppError::NoRowAffectedError(_)
+            | AppError::NoRowsAffectedError(_)
             | AppError::KeyValueStoreError(_)
             | AppError::BcryptError(_)
             | AppError::ConversionEntityError(_)) => {
@@ -60,4 +59,5 @@ impl IntoResponse for AppError {
     }
 }
 
+// エラー型が `AppError` なものを扱える `Result` 型
 pub type AppResult<T> = Result<T, AppError>;

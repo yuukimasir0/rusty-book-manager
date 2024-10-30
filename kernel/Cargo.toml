@@ -8,7 +8,7 @@ publish.workspace = true
 [dependencies]
 shared.workspace = true
 async-trait.workspace = true
-# derive-new.workspace = true
+derive-new.workspace = true
 # chrono.workspace = true
 # mockall.workspace = true
 serde.workspace = true

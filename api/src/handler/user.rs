@@ -1,13 +1,3 @@
-use axum::{
-    extract::{Path, State},
-    http::status::StatusCode,
-    Json,
-};
-use garde::Validate;
-use kernel::model::{id::UserId, user::event::DeleteUser};
-use registry::AppRegistry;
-use shared::error::{AppError, AppResult};
-
 use crate::{
     extractor::AuthorizedUser,
     model::user::{
@@ -15,6 +5,15 @@ use crate::{
         UpdateUserRoleRequest, UpdateUserRoleRequestWithUserId, UserResponse, UsersResponse,
     },
 };
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    Json,
+};
+use garde::Validate;
+use kernel::model::{id::UserId, user::event::DeleteUser};
+use registry::AppRegistry;
+use shared::error::{AppError, AppResult};
 
 pub async fn register_user(
     user: AuthorizedUser,
@@ -27,12 +26,12 @@ pub async fn register_user(
 
     req.validate()?;
 
-    let registerd_user = registry.user_repository().create(req.into()).await?;
+    let registered_user = registry.user_repository().create(req.into()).await?;
 
-    Ok(Json(registerd_user.into()))
+    Ok(Json(registered_user.into()))
 }
 
-pub async fn list_user(
+pub async fn list_users(
     _user: AuthorizedUser,
     State(registry): State<AppRegistry>,
 ) -> AppResult<Json<UsersResponse>> {
@@ -96,4 +95,17 @@ pub async fn change_password(
         .await?;
 
     Ok(StatusCode::OK)
+}
+
+use crate::model::checkout::CheckoutsResponse;
+pub async fn get_checkouts(
+    user: AuthorizedUser,
+    State(registry): State<AppRegistry>,
+) -> AppResult<Json<CheckoutsResponse>> {
+    registry
+        .checkout_repository()
+        .find_unreturned_by_user_id(user.id())
+        .await
+        .map(CheckoutsResponse::from)
+        .map(Json)
 }

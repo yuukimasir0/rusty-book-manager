@@ -1,12 +1,11 @@
-use axum::{extract::State, http::StatusCode, Json};
-use kernel::model::auth::event::CreateToken;
-use registry::AppRegistry;
-use shared::error::AppResult;
-
 use crate::{
     extractor::AuthorizedUser,
     model::auth::{AccessTokenResponse, LoginRequest},
 };
+use axum::{extract::State, http::StatusCode, Json};
+use kernel::model::auth::event::CreateToken;
+use registry::AppRegistry;
+use shared::error::AppResult;
 
 pub async fn login(
     State(registry): State<AppRegistry>,
@@ -32,7 +31,7 @@ pub async fn logout(
 ) -> AppResult<StatusCode> {
     registry
         .auth_repository()
-        .delete_token(&user.access_token)
+        .delete_token(user.access_token)
         .await?;
     Ok(StatusCode::NO_CONTENT)
 }

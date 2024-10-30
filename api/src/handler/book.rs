@@ -1,13 +1,3 @@
-use axum::{
-    extract::{Path, Query, State},
-    http::StatusCode,
-    Json,
-};
-
-use garde::Validate;
-use registry::AppRegistry;
-use shared::error::{AppError, AppResult};
-
 use crate::{
     extractor::AuthorizedUser,
     model::book::{
@@ -15,13 +5,22 @@ use crate::{
         UpdateBookRequestWithIds,
     },
 };
+use axum::{
+    extract::{Path, Query, State},
+    http::StatusCode,
+    Json,
+};
+use garde::Validate;
 use kernel::model::{book::event::DeleteBook, id::BookId};
+use registry::AppRegistry;
+use shared::error::{AppError, AppResult};
 
 pub async fn register_book(
     user: AuthorizedUser,
     State(registry): State<AppRegistry>,
     Json(req): Json<CreateBookRequest>,
 ) -> AppResult<StatusCode> {
+    req.validate()?;
     registry
         .book_repository()
         .create(req.into(), user.id())
@@ -34,6 +33,7 @@ pub async fn show_book_list(
     Query(query): Query<BookListQuery>,
     State(registry): State<AppRegistry>,
 ) -> AppResult<Json<PaginatedBookResponse>> {
+    query.validate()?;
     registry
         .book_repository()
         .find_all(query.into())
@@ -44,18 +44,16 @@ pub async fn show_book_list(
 
 pub async fn show_book(
     _user: AuthorizedUser,
-    Path(req): Path<BookId>,
+    Path(book_id): Path<BookId>,
     State(registry): State<AppRegistry>,
 ) -> AppResult<Json<BookResponse>> {
     registry
         .book_repository()
-        .find_by_id(req)
+        .find_by_id(book_id)
         .await
         .and_then(|bc| match bc {
             Some(bc) => Ok(Json(bc.into())),
-            None => Err(AppError::EntityNotFound(
-                "The specific book was not found".to_string(),
-            )),
+            None => Err(AppError::EntityNotFound("not found".to_string())),
         })
 }
 

@@ -93,6 +93,7 @@ dependencies = [
  "anyhow",
  "axum",
  "axum-extra",
+ "chrono",
  "derive-new",
  "garde",
  "hyper",
@@ -1017,6 +1018,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "derive-new",
  "serde",
  "shared",
  "sqlx",

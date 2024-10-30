@@ -1,3 +1,4 @@
+use super::user::BookOwner;
 use derive_new::new;
 use garde::Validate;
 use kernel::model::{
@@ -10,7 +11,10 @@ use kernel::model::{
 };
 use serde::{Deserialize, Serialize};
 
-use super::user::BookOwner;
+use super::user::CheckoutUser;
+use chrono::{DateTime, Utc};
+use kernel::model::book::Checkout;
+use kernel::model::id::CheckoutId;
 
 #[derive(Debug, Deserialize, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -99,7 +103,7 @@ const fn default_limit() -> i64 {
 impl From<BookListQuery> for BookListOptions {
     fn from(value: BookListQuery) -> Self {
         let BookListQuery { limit, offset } = value;
-        BookListOptions { limit, offset }
+        Self { limit, offset }
     }
 }
 
@@ -112,6 +116,7 @@ pub struct BookResponse {
     pub isbn: String,
     pub description: String,
     pub owner: BookOwner,
+    pub checkout: Option<BookCheckoutResponse>,
 }
 
 impl From<Book> for BookResponse {
@@ -123,6 +128,7 @@ impl From<Book> for BookResponse {
             isbn,
             description,
             owner,
+            checkout,
         } = value;
         Self {
             id,
@@ -131,6 +137,7 @@ impl From<Book> for BookResponse {
             isbn,
             description,
             owner: owner.into(),
+            checkout: checkout.map(BookCheckoutResponse::from),
         }
     }
 }
@@ -152,11 +159,34 @@ impl From<PaginatedList<Book>> for PaginatedBookResponse {
             offset,
             items,
         } = value;
-        PaginatedBookResponse {
+        Self {
             total,
             limit,
             offset,
             items: items.into_iter().map(BookResponse::from).collect(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BookCheckoutResponse {
+    pub id: CheckoutId,
+    pub checked_out_by: CheckoutUser,
+    pub checked_out_at: DateTime<Utc>,
+}
+
+impl From<Checkout> for BookCheckoutResponse {
+    fn from(value: Checkout) -> Self {
+        let Checkout {
+            checkout_id,
+            checked_out_by,
+            checked_out_at,
+        } = value;
+        Self {
+            id: checkout_id,
+            checked_out_by: checked_out_by.into(),
+            checked_out_at,
         }
     }
 }
