@@ -279,12 +279,19 @@ mod tests {
     async fn test_update_book(pool: sqlx::PgPool) -> anyhow::Result<()> {
         let repo = BookRepositoryImpl::new(ConnectionPool::new(pool.clone()));
 
-        let book_id = BookId::from_str("9890736e-14e4-461a-a77d-eac3517ef11b").unwrap();
+        let book_id = BookId::from_str("9890736e-a4e4-461a-a77d-eac3517ef11b").unwrap();
         let book = repo.find_by_id(book_id).await?.unwrap();
         const NEW_AUTHOR: &str = "更新後の著者名";
         assert_ne!(book.author, NEW_AUTHOR);
 
-        let update_book = UpdateBook { book_id, title: book.title, author: NEW_AUTHOR.into(), isbn: book.isbn, description: book.description, requested_user: UserId::from_str("5b4c96ac-316a-4bee-8e69-cac5eb84ff4c").unwrap() };
+        let update_book = UpdateBook {
+            book_id,
+            title: book.title,
+            author: NEW_AUTHOR.into(),
+            isbn: book.isbn,
+            description: book.description,
+            requested_user: UserId::from_str("5b4c96ac-316a-4bee-8e69-cac5eb84ff4c").unwrap(),
+        };
         repo.update(update_book).await.unwrap();
 
         let book = repo.find_by_id(book_id).await?.unwrap();

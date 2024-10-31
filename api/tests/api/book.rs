@@ -20,18 +20,19 @@ use kernel::{
 };
 
 #[rstest]
-#[case("/books", 20, 0)]
-#[case("/books?limit=50", 50, 0)]
-#[case("/books?limit=50&offset=20", 50, 20)]
-#[case("/books?offset=20", 20, 20)]
-#[case("/books?limit=-1", -1, 0)]
-#[case("/books?offset=aaa", 20, 0)]
+#[case::normal("/books", 20, 0, true)]
+#[case::normal("/books?limit=50", 50, 0, true)]
+#[case::normal("/books?limit=50&offset=20", 50, 20, true)]
+#[case::normal("/books?offset=20", 20, 20, true)]
+#[case::invalid_limit("/books?limit=-1", -1, 0, false)]
+#[case::invalid_offset("/books?offset=aaa", 20, 0, false)]
 #[tokio::test]
 async fn show_book_list_with_query_200(
     mut fixture: registry::MockAppRegistryExt,
     #[case] path: &str,
     #[case] expected_limit: i64,
     #[case] expected_offset: i64,
+    #[case] is_valid: bool,
 ) -> anyhow::Result<()> {
     let book_id = BookId::new();
 
@@ -64,11 +65,18 @@ async fn show_book_list_with_query_200(
 
     let req = Request::get(&v1(path)).bearer().body(Body::empty())?;
     let resp = app.oneshot(req).await?;
-    assert_eq!(resp.status(), axum::http::StatusCode::OK);
-
-    let result = deserialize_json!(resp, PaginatedBookResponse);
-    assert_eq!(result.limit, expected_limit);
-    assert_eq!(result.offset, expected_offset);
-
+    if is_valid {
+        assert_eq!(
+            resp.status(),
+            axum::http::StatusCode::OK,
+            "ステータスコード{}を返しました．",
+            resp.status()
+        );
+        let result = deserialize_json!(resp, PaginatedBookResponse);
+        assert_eq!(result.limit, expected_limit);
+        assert_eq!(result.offset, expected_offset);
+    } else {
+        assert_ne!(resp.status(), axum::http::StatusCode::OK);
+    }
     Ok(())
 }

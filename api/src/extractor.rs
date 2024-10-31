@@ -20,7 +20,6 @@ impl AuthorizedUser {
     pub fn id(&self) -> UserId {
         self.user.id
     }
-
     pub fn is_admin(&self) -> bool {
         self.user.role == Role::Admin
     }
@@ -51,6 +50,7 @@ impl FromRequestParts<AppRegistry> for AuthorizedUser {
             .find_current_user(user_id)
             .await?
             .ok_or(AppError::UnauthenticatedError)?;
+
         Ok(Self { access_token, user })
     }
 }

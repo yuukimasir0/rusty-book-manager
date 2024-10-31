@@ -28,7 +28,7 @@ const Header: FC = () => {
   const router = useRouter();
 
   const onClickLogout = async () => {
-    // TODO: components内でリクエストを飛ばさないようにしたい。外からpropsで渡す。
+    
     await post({ destination: "/auth/logout", token: accessToken });
     router.push("/login");
   };

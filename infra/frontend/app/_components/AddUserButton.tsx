@@ -32,7 +32,7 @@ type UserInput = {
 const AddUserButton: FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [userInput, setUserInput] = useState<UserInput | null>(null);
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false); // 成功メッセージモーダルの表示制御
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false); 
   const [accessToken] = useLocalStorageState(ACCESS_TOKEN_KEY);
   const toast = useToast();
   const { mutate } = useSWRConfig();
@@ -158,7 +158,7 @@ const AddUserButton: FC = () => {
               colorScheme="blue"
               onClick={() => {
                 setUserInput(null);
-                setIsSuccessModalOpen(false); // 成功メッセージモーダルを閉じる
+                setIsSuccessModalOpen(false); 
               }}
             >
               OK

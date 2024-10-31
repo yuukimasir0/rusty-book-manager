@@ -10,6 +10,8 @@ use kernel::model::{
     list::PaginatedList,
 };
 use serde::{Deserialize, Serialize};
+#[cfg(debug_assertions)]
+use utoipa::ToSchema;
 
 use super::user::CheckoutUser;
 use chrono::{DateTime, Utc};
@@ -17,6 +19,7 @@ use kernel::model::book::Checkout;
 use kernel::model::id::CheckoutId;
 
 #[derive(Debug, Deserialize, Validate)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct CreateBookRequest {
     #[garde(length(min = 1))]
@@ -37,7 +40,7 @@ impl From<CreateBookRequest> for CreateBook {
             isbn,
             description,
         } = value;
-        Self {
+        CreateBook {
             title,
             author,
             isbn,
@@ -47,6 +50,7 @@ impl From<CreateBookRequest> for CreateBook {
 }
 
 #[derive(Debug, Deserialize, Validate)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateBookRequest {
     #[garde(length(min = 1))]
@@ -61,7 +65,6 @@ pub struct UpdateBookRequest {
 
 #[derive(new)]
 pub struct UpdateBookRequestWithIds(BookId, UserId, UpdateBookRequest);
-
 impl From<UpdateBookRequestWithIds> for UpdateBook {
     fn from(value: UpdateBookRequestWithIds) -> Self {
         let UpdateBookRequestWithIds(
@@ -108,6 +111,7 @@ impl From<BookListQuery> for BookListOptions {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct BookResponse {
     pub id: BookId,
@@ -143,6 +147,7 @@ impl From<Book> for BookResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct PaginatedBookResponse {
     pub total: i64,
@@ -169,6 +174,7 @@ impl From<PaginatedList<Book>> for PaginatedBookResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct BookCheckoutResponse {
     pub id: CheckoutId,
@@ -186,6 +192,7 @@ impl From<Checkout> for BookCheckoutResponse {
         Self {
             id: checkout_id,
             checked_out_by: checked_out_by.into(),
+
             checked_out_at,
         }
     }

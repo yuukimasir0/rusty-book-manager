@@ -27,7 +27,8 @@ async-trait = "0.1.83"
 anyhow = "1.0.89"
 axum = { version = "0.7.7", features = ["macros"] }
 derive-new = "0.7.0"
-utoipa = { version = "5.1.1", features = ["axum_extras", "uuid", "chrono"] }
+utoipa = { version = "4.1.0", features = ["axum_extras", "uuid", "chrono"] }
+utoipa-redoc = { version = "2.0.0", features = ["axum"] }
 uuid = { version = "1.11.0", features = ["v4", "serde"] }
 chrono = { version = "0.4.38", default-features = false, features = ["serde"] }
 serde = { version = "1.0.210", features = ["derive"] }
@@ -48,21 +49,22 @@ garde = { version = "0.20.0", features = ["derive", "email"] }
 
 [dependencies]
 tower-http = { version = "0.6.1", features = ["cors", "trace"] }
-# thiserror.workspace = true
+thiserror.workspace = true
 adapter.workspace = true
 api.workspace = true
 registry.workspace = true
 shared.workspace = true
 anyhow.workspace = true
 axum.workspace = true
-# utoipa.workspace = true
-# utoipa-redoc = { version = "5.0.0", features = ["axum"] }
+utoipa.workspace = true
+utoipa-redoc.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
-# opentelemetry = "0.26.0"
-# tracing-opentelemetry = "0.27.0"
-# opentelemetry-jaeger = { version = "0.22.0", features = ["rt-tokio"] }
+opentelemetry = "0.21.0"
+tracing-opentelemetry = "0.22.0"
+opentelemetry-jaeger = { version = "0.20.0", features = ["rt-tokio"] }
+opentelemetry_sdk = { version = "0.21.2", features = ["rt-tokio"] }
 
 [profile.dev.package.sqlx-macros]
 opt-level = 3
